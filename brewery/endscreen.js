@@ -88,13 +88,13 @@ function drawEndScreen(bs) {
 
 // ─── Beer bottle ─────────────────────────────────────────────────────────────
 function _drawBottle(cx, cy) {
-  const BW   = 128;   // body width
-  const BH   = 210;   // body height
-  const NW   = 36;    // neck width
-  const NH   = 102;   // neck height
-  const SH   = 50;    // shoulder height
-  const CW   = 42;    // cap width
-  const CH   = 20;    // cap height
+  const BW   = 72;    // body width  ← slimmer
+  const BH   = 250;   // body height ← taller
+  const NW   = 26;    // neck width
+  const NH   = 115;   // neck height ← longer neck
+  const SH   = 48;    // shoulder height
+  const CW   = 32;    // cap width
+  const CH   = 18;    // cap height
   const totH = CH + NH + SH + BH;
 
   const capY  = cy - totH / 2;
@@ -150,7 +150,7 @@ function _drawBottle(cx, cy) {
   rect(cx - NW / 2 + 4, neckY + 6, NW / 3 + 1, NH - 12, 2);
 
   // ── Label ────────────────────────────────────────────────────
-  _drawBeerLabel(cx, bodY + BH * 0.40, BW - 10, BH * 0.76);
+  _drawBeerLabel(cx, bodY + BH * 0.44, BW - 4, BH * 0.80);
 
   // ── Table surface ────────────────────────────────────────────
   let tableY = bodY + BH + 10;
@@ -184,53 +184,53 @@ function _drawBeerLabel(cx, cy, lw, lh) {
 
   // ── "KLOSTER" ────────────────────────────────────────────────
   fill('#8B1A1A');
-  textFont('monospace'); textSize(7.5);
+  textFont('monospace'); textSize(6);
   text('\u2015\u2015 KLOSTER \u2015\u2015', cx, yy);
-  yy += 11;
+  yy += 9;
 
   // ── Monastery illustration ───────────────────────────────────
-  _monasteryIcon(cx, yy, lw * 0.78, 46);
-  yy += 50;
+  _monasteryIcon(cx, yy, lw * 0.82, 40);
+  yy += 44;
 
   // ── Main name ────────────────────────────────────────────────
   fill('#160800');
-  textFont('monospace'); textSize(9.5);
+  textFont('monospace'); textSize(8);
   drawingContext.shadowBlur  = 3;
   drawingContext.shadowColor = 'rgba(120,80,10,0.5)';
   text('RIDDAGSHAUSEN', cx, yy);
   drawingContext.shadowBlur = 0;
-  yy += 13;
+  yy += 11;
 
   // ── Divider with hop motif ───────────────────────────────────
   stroke('#9B6E14'); strokeWeight(0.8);
-  line(lx + 10, yy + 3, lx + lw - 10, yy + 3);
+  line(lx + 6, yy + 3, lx + lw - 6, yy + 3);
   fill('#5A7A2A'); noStroke();
-  ellipse(cx - 4, yy + 3, 4, 6); ellipse(cx + 4, yy + 3, 4, 6);
-  yy += 8;
+  ellipse(cx - 3, yy + 3, 3, 5); ellipse(cx + 3, yy + 3, 3, 5);
+  yy += 7;
 
   // ── Beer style ───────────────────────────────────────────────
   fill('#4A2A08'); noStroke();
-  textFont('Arial'); textSize(7);
+  textFont('Arial'); textSize(5.5);
   text('BAYERISCHES HELLES LAGER', cx, yy);
-  yy += 11;
+  yy += 9;
 
   // ── Location ─────────────────────────────────────────────────
-  fill('#6B4414'); textSize(6.5);
+  fill('#6B4414'); textSize(5.5);
   text('Braunschweig \u00b7 seit 1145', cx, yy);
-  yy += 10;
+  yy += 9;
 
   // ── Hop & grain row ──────────────────────────────────────────
-  _hopRow(cx, yy, lw * 0.5);
-  yy += 14;
+  _hopRow(cx, yy, lw * 0.55);
+  yy += 13;
 
   // ── ABV + Volume ─────────────────────────────────────────────
   fill('#1E0E00');
-  textFont('monospace'); textSize(7.5);
+  textFont('monospace'); textSize(6.5);
   text('5,2% vol  \u00b7  0,5 L', cx, yy);
-  yy += 11;
+  yy += 10;
 
   // ── Reinheitsgebot ───────────────────────────────────────────
-  fill('#7A5820'); textFont('Arial'); textSize(6);
+  fill('#7A5820'); textFont('Arial'); textSize(5);
   text('Reinheitsgebot 1516', cx, yy);
 
   pop();
