@@ -103,21 +103,31 @@ function _drawHeader() {
   fill('#8AAAC8'); textSize(9);
   text('Reinheitsgebot 1516 \u00b7 Wasser \u00b7 Malz \u00b7 Hopfen \u00b7 Hefe', 20, ZONE.HEADER_BOT - 10);
 
-  // Step name (centre)
   let def = STEP_DEFS[bs.step];
-  fill(COL.text); textSize(13); textAlign(CENTER, CENTER); textFont('monospace');
-  text('Stap ' + (bs.step + 1) + '/10: ' + def.name, CANVAS_W / 2, ZONE.HEADER_BOT / 2 - 8);
 
-  // Progress bar
-  let barX = CANVAS_W / 2 - 130, barY = ZONE.HEADER_BOT - 16, barW = 260, barH = 6;
-  fill(20, 40, 65); noStroke();
-  rect(barX, barY, barW, barH, 3);
-  fill(COL.highlight);
-  rect(barX, barY, barW * bs.stepProgress, barH, 3);
+  if (bs.done) {
+    // Replace step name + progress with completion banner
+    fill(COL.highlight); textSize(15); textAlign(CENTER, CENTER); textFont('monospace');
+    drawingContext.shadowBlur  = 12;
+    drawingContext.shadowColor = '#FFD700';
+    text('\uD83C\uDF89 BROUWEN COMPLEET! Proost! \uD83C\uDF7A', CANVAS_W / 2, ZONE.HEADER_BOT / 2);
+    drawingContext.shadowBlur = 0;
+  } else {
+    // Step name (centre)
+    fill(COL.text); textSize(13); textAlign(CENTER, CENTER); textFont('monospace');
+    text('Stap ' + (bs.step + 1) + '/10: ' + def.name, CANVAS_W / 2, ZONE.HEADER_BOT / 2 - 8);
 
-  // Real-time label
-  fill('#7A9AB8'); textSize(9); textAlign(CENTER, TOP);
-  text(def.realTime + ' reëel', CANVAS_W / 2, ZONE.HEADER_BOT - 28);
+    // Progress bar
+    let barX = CANVAS_W / 2 - 130, barY = ZONE.HEADER_BOT - 16, barW = 260, barH = 6;
+    fill(20, 40, 65); noStroke();
+    rect(barX, barY, barW, barH, 3);
+    fill(COL.highlight);
+    rect(barX, barY, barW * bs.stepProgress, barH, 3);
+
+    // Real-time label
+    fill('#7A9AB8'); textSize(9); textAlign(CENTER, TOP);
+    text(def.realTime + ' reëel', CANVAS_W / 2, ZONE.HEADER_BOT - 28);
+  }
 
   // Clock (top-right)
   let mins = floor(bs.totalTime / 60);
@@ -126,12 +136,6 @@ function _drawHeader() {
   text(nf(mins, 2) + ':' + nf(secs, 2), CANVAS_W - 20, ZONE.HEADER_BOT / 2 - 6);
   fill('#8AAAC8'); textSize(9);
   text(nf(bs.speed, 1, 1) + '\u00d7 snelheid', CANVAS_W - 20, ZONE.HEADER_BOT - 12);
-
-  // Done banner
-  if (bs.done) {
-    fill(COL.highlight); textSize(15); textAlign(CENTER, CENTER);
-    text('\uD83C\uDF89 BROUWEN COMPLEET! Proost! \uD83C\uDF7A', CANVAS_W / 2 + 80, ZONE.HEADER_BOT / 2 - 6);
-  }
   pop();
 }
 
