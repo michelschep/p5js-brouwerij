@@ -1,0 +1,360 @@
+'use strict';
+
+// ─── Confetti particle ────────────────────────────────────────────────────────
+class ConfettiParticle extends Particle {
+  constructor(x, y) {
+    const COLS = [
+      color(255, 215,   0),  // gold
+      color(220,  50,  50),  // red
+      color( 50, 180,  80),  // green
+      color( 70, 130, 220),  // blue
+      color(200,  80, 200),  // purple
+      color(255, 160,  20),  // orange
+    ];
+    super(x, y, random(-2.5, 2.5), random(-4, -0.8),
+          random(8, 15), random(COLS), 210);
+    this.angle  = random(TWO_PI);
+    this.spin   = random(-0.18, 0.18);
+    this.aspect = random(0.28, 0.60);
+  }
+
+  update() {
+    this.vy    += 0.09;
+    this.vx    *= 0.995;
+    this.angle += this.spin;
+    super.update();
+  }
+
+  draw() {
+    let a = map(this.lifetime, 0, this.maxLife, 0, 220);
+    push();
+    translate(this.x, this.y);
+    rotate(this.angle);
+    fill(red(this.col), green(this.col), blue(this.col), a);
+    noStroke();
+    rect(-this.sz / 2, -this.sz * this.aspect / 2, this.sz, this.sz * this.aspect, 1);
+    pop();
+  }
+}
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let _confettiTimer = 0;
+
+function resetEndScreen() { _confettiTimer = 0; }
+
+// ─── Main entry point ─────────────────────────────────────────────────────────
+function drawEndScreen(bs) {
+  // Spawn confetti bursts periodically
+  _confettiTimer -= deltaTime / 1000;
+  if (_confettiTimer <= 0) {
+    _confettiTimer = 0.8;
+    for (let i = 0; i < 18; i++) {
+      spawnParticle(new ConfettiParticle(
+        random(CANVAS_W * 0.1, CANVAS_W * 0.9),
+        random(ZONE.HEADER_BOT + 20, ZONE.FACTORY_BOT - 60)
+      ));
+    }
+  }
+
+  // Dark overlay over factory
+  push();
+  fill(4, 10, 18, 210);
+  noStroke();
+  rect(0, ZONE.HEADER_BOT, CANVAS_W, ZONE.FACTORY_BOT - ZONE.HEADER_BOT);
+  pop();
+
+  // Centre bottle
+  let bx = CANVAS_W / 2;
+  let by = (ZONE.HEADER_BOT + ZONE.FACTORY_BOT) / 2 + 15;
+  _drawBottle(bx, by);
+
+  // Celebration text
+  push();
+  fill(COL.highlight);
+  textFont('monospace');
+  textSize(30);
+  textAlign(CENTER, CENTER);
+  noStroke();
+  drawingContext.shadowBlur  = 30;
+  drawingContext.shadowColor = '#FFD700';
+  text('\uD83C\uDF89 Proost! \uD83C\uDF7A', CANVAS_W / 2, ZONE.HEADER_BOT + 32);
+  drawingContext.shadowBlur = 0;
+
+  fill('#8AAAC8');
+  textSize(11);
+  text('Kloster Riddagshausen · Braunschweig · Reinheitsgebot 1516', CANVAS_W / 2, ZONE.FACTORY_BOT - 18);
+  pop();
+}
+
+// ─── Beer bottle ─────────────────────────────────────────────────────────────
+function _drawBottle(cx, cy) {
+  const BW   = 128;   // body width
+  const BH   = 210;   // body height
+  const NW   = 36;    // neck width
+  const NH   = 102;   // neck height
+  const SH   = 50;    // shoulder height
+  const CW   = 42;    // cap width
+  const CH   = 20;    // cap height
+  const totH = CH + NH + SH + BH;
+
+  const capY  = cy - totH / 2;
+  const neckY = capY + CH;
+  const shlY  = neckY + NH;
+  const bodY  = shlY + SH;
+
+  push();
+
+  // ── Amber glass colour ───────────────────────────────────────
+  const GR = 132, GG = 74, GB = 8;
+
+  // Body
+  fill(GR, GG, GB, 195); stroke(70, 38, 4); strokeWeight(2);
+  rect(cx - BW / 2, bodY, BW, BH, 0, 0, 10, 10);
+
+  // Beer fill inside body
+  let beerCol = color(COL.liquid[9]);
+  fill(red(beerCol), green(beerCol), blue(beerCol), 200); noStroke();
+  rect(cx - BW / 2 + 3, bodY + 3, BW - 6, BH - 6, 0, 0, 8, 8);
+
+  // Shoulder
+  fill(GR, GG, GB, 195); stroke(70, 38, 4); strokeWeight(2);
+  beginShape();
+  vertex(cx - BW / 2, shlY + SH);
+  vertex(cx + BW / 2, shlY + SH);
+  vertex(cx + NW / 2, shlY);
+  vertex(cx - NW / 2, shlY);
+  endShape(CLOSE);
+
+  // Neck
+  fill(GR, GG, GB, 220); stroke(70, 38, 4); strokeWeight(2);
+  rect(cx - NW / 2, neckY, NW, NH, 3, 3, 0, 0);
+
+  // ── Crown cap ────────────────────────────────────────────────
+  fill(160, 25, 25); stroke(100, 16, 16); strokeWeight(1.5);
+  rect(cx - CW / 2, capY, CW, CH, 3, 3, 5, 5);
+  // Ridges
+  stroke(200, 45, 45); strokeWeight(0.8);
+  for (let i = 1; i < 9; i++) {
+    let rx = cx - CW / 2 + i * CW / 9;
+    line(rx, capY + 5, rx, capY + CH - 3);
+  }
+  // Top shine
+  fill(220, 60, 60, 120); noStroke();
+  rect(cx - CW / 2 + 3, capY + 3, CW - 6, 4, 2);
+
+  // ── Glass highlights ─────────────────────────────────────────
+  noStroke();
+  fill(255, 255, 255, 35);
+  rect(cx - BW / 2 + 7, bodY + 12, BW / 4, BH - 24, 3);
+  fill(255, 255, 255, 20);
+  rect(cx - NW / 2 + 4, neckY + 6, NW / 3 + 1, NH - 12, 2);
+
+  // ── Label ────────────────────────────────────────────────────
+  _drawBeerLabel(cx, bodY + BH * 0.40, BW - 10, BH * 0.76);
+
+  // ── Table surface ────────────────────────────────────────────
+  let tableY = bodY + BH + 10;
+  stroke(50, 68, 85, 130); strokeWeight(1.5); noFill();
+  line(cx - BW * 0.65, tableY, cx + BW * 0.65, tableY);
+  // Simple drop-shadow / reflection ellipse
+  fill(0, 0, 0, 45); noStroke();
+  ellipse(cx, tableY + 5, BW * 0.9, 12);
+
+  pop();
+}
+
+// ─── Riddagshausen label ─────────────────────────────────────────────────────
+function _drawBeerLabel(cx, cy, lw, lh) {
+  let lx = cx - lw / 2;
+  let ly = cy - lh / 2;
+
+  push();
+
+  // ── Background + border ──────────────────────────────────────
+  fill('#F2DFA0'); stroke('#7A5810'); strokeWeight(2);
+  rect(lx, ly, lw, lh, 3);
+  // Inner double border
+  noFill(); stroke('#9B6E14'); strokeWeight(1);
+  rect(lx + 4, ly + 4, lw - 8, lh - 8, 2);
+  // Gold corner ornaments
+  _labelCorners(lx, ly, lw, lh);
+
+  let yy = ly + 11;
+  textAlign(CENTER, TOP); noStroke();
+
+  // ── "KLOSTER" ────────────────────────────────────────────────
+  fill('#8B1A1A');
+  textFont('monospace'); textSize(7.5);
+  text('\u2015\u2015 KLOSTER \u2015\u2015', cx, yy);
+  yy += 11;
+
+  // ── Monastery illustration ───────────────────────────────────
+  _monasteryIcon(cx, yy, lw * 0.78, 46);
+  yy += 50;
+
+  // ── Main name ────────────────────────────────────────────────
+  fill('#160800');
+  textFont('monospace'); textSize(9.5);
+  drawingContext.shadowBlur  = 3;
+  drawingContext.shadowColor = 'rgba(120,80,10,0.5)';
+  text('RIDDAGSHAUSEN', cx, yy);
+  drawingContext.shadowBlur = 0;
+  yy += 13;
+
+  // ── Divider with hop motif ───────────────────────────────────
+  stroke('#9B6E14'); strokeWeight(0.8);
+  line(lx + 10, yy + 3, lx + lw - 10, yy + 3);
+  fill('#5A7A2A'); noStroke();
+  ellipse(cx - 4, yy + 3, 4, 6); ellipse(cx + 4, yy + 3, 4, 6);
+  yy += 8;
+
+  // ── Beer style ───────────────────────────────────────────────
+  fill('#4A2A08'); noStroke();
+  textFont('Arial'); textSize(7);
+  text('BAYERISCHES HELLES LAGER', cx, yy);
+  yy += 11;
+
+  // ── Location ─────────────────────────────────────────────────
+  fill('#6B4414'); textSize(6.5);
+  text('Braunschweig \u00b7 seit 1145', cx, yy);
+  yy += 10;
+
+  // ── Hop & grain row ──────────────────────────────────────────
+  _hopRow(cx, yy, lw * 0.5);
+  yy += 14;
+
+  // ── ABV + Volume ─────────────────────────────────────────────
+  fill('#1E0E00');
+  textFont('monospace'); textSize(7.5);
+  text('5,2% vol  \u00b7  0,5 L', cx, yy);
+  yy += 11;
+
+  // ── Reinheitsgebot ───────────────────────────────────────────
+  fill('#7A5820'); textFont('Arial'); textSize(6);
+  text('Reinheitsgebot 1516', cx, yy);
+
+  pop();
+}
+
+// ─── Label corner ornaments ───────────────────────────────────────────────────
+function _labelCorners(lx, ly, lw, lh) {
+  let mx = lx + lw / 2;
+  let my = ly + lh / 2;
+  push();
+  stroke('#9B6E14'); strokeWeight(0.8); noFill();
+  let s = 7;
+  for (let [ox, oy] of [[lx+4,ly+4],[lx+lw-4,ly+4],[lx+4,ly+lh-4],[lx+lw-4,ly+lh-4]]) {
+    let sx = ox < mx ? 1 : -1;
+    let sy = oy < my ? 1 : -1;
+    line(ox, oy, ox + sx * s, oy);
+    line(ox, oy, ox, oy + sy * s);
+  }
+  pop();
+}
+
+// ─── Monastery silhouette ────────────────────────────────────────────────────
+function _monasteryIcon(cx, topY, iw, ih) {
+  push();
+  let ix = cx - iw / 2;
+
+  // Sky tint
+  fill('#D4C890'); noStroke();
+  rect(ix, topY, iw, ih, 2);
+
+  // Main nave (body)
+  fill('#B8A065'); stroke('#7A5820'); strokeWeight(1);
+  rect(ix + iw * .22, topY + ih * .25, iw * .56, ih * .75);
+
+  // Left side wing
+  rect(ix + iw * .05, topY + ih * .40, iw * .18, ih * .60);
+
+  // Right side wing
+  rect(ix + iw * .77, topY + ih * .40, iw * .18, ih * .60);
+
+  // ── Central tower ────────────────────────────────────────────
+  fill('#C8AE72'); stroke('#7A5820');
+  rect(ix + iw * .38, topY, iw * .24, ih * .65);
+
+  // Tower pointed roof
+  fill('#8B1A1A'); stroke('#6A1414'); strokeWeight(1);
+  triangle(
+    ix + iw * .38,              topY + ih * .08,
+    ix + iw * .62,              topY + ih * .08,
+    ix + iw * .50,              topY - ih * .12
+  );
+  // Cross on top
+  stroke('#F2DFA0'); strokeWeight(1.5);
+  line(cx, topY - ih * .12, cx, topY - ih * .22);
+  line(cx - iw * .04, topY - ih * .17, cx + iw * .04, topY - ih * .17);
+
+  // ── Gothic entrance arch ─────────────────────────────────────
+  fill('#2A1400'); noStroke();
+  // Pointed arch: two arcs
+  let ax  = cx;
+  let ay  = topY + ih * .85;
+  let aw  = iw * .22;
+  let ah  = ih * .38;
+  beginShape();
+  vertex(ax - aw / 2, ay);
+  bezierVertex(ax - aw / 2, ay - ah, ax, ay - ah * 1.1, ax, ay - ah);
+  bezierVertex(ax, ay - ah * 1.1, ax + aw / 2, ay - ah, ax + aw / 2, ay);
+  endShape(CLOSE);
+
+  // ── Rose window ──────────────────────────────────────────────
+  noFill(); stroke('#8B1A1A'); strokeWeight(1);
+  let ry = topY + ih * .35;
+  let rr = iw * .09;
+  ellipse(cx, ry, rr * 2, rr * 2);
+  // Six spokes
+  for (let i = 0; i < 6; i++) {
+    let a = i * PI / 3;
+    line(cx, ry, cx + cos(a) * rr, ry + sin(a) * rr);
+  }
+  // Inner circle
+  ellipse(cx, ry, rr * 0.5, rr * 0.5);
+
+  // ── Small arched windows (wings) ─────────────────────────────
+  fill('#1A0C00'); noStroke();
+  for (let wx of [ix + iw * .14, ix + iw * .82]) {
+    let wy = topY + ih * .58;
+    let ww = iw * .09, wh = ih * .22;
+    // Pointed mini arch
+    beginShape();
+    vertex(wx - ww / 2, wy);
+    bezierVertex(wx - ww / 2, wy - wh, wx, wy - wh * 1.08, wx, wy - wh * .9);
+    bezierVertex(wx, wy - wh * 1.08, wx + ww / 2, wy - wh, wx + ww / 2, wy);
+    endShape(CLOSE);
+  }
+
+  // Ground line
+  stroke('#7A5820'); strokeWeight(1.5); noFill();
+  line(ix, topY + ih, ix + iw, topY + ih);
+
+  pop();
+}
+
+// ─── Decorative hop row ───────────────────────────────────────────────────────
+function _hopRow(cx, y, width) {
+  push();
+  let hw = width / 2;
+  for (let side of [-1, 1]) {
+    let bx = cx + side * hw * .55;
+    // Stem
+    stroke('#5A7A2A'); strokeWeight(1); noFill();
+    line(bx, y - 2, bx, y + 10);
+    // Hop cone leaves
+    fill('#6A8A30'); stroke('#4A6A20'); strokeWeight(0.7);
+    ellipse(bx,      y + 4,  6, 8);
+    ellipse(bx - 3,  y + 8,  5, 7);
+    ellipse(bx + 3,  y + 8,  5, 7);
+    // Grain stalk (other side)
+    let gx = cx - side * hw * .55;
+    stroke('#9B8020'); strokeWeight(1.2);
+    line(gx, y + 12, gx, y - 2);
+    fill('#B89428'); stroke('#8B6818'); strokeWeight(0.6);
+    for (let k = 0; k < 4; k++) {
+      ellipse(gx + (k % 2 === 0 ? 3 : -3), y + 10 - k * 3.5, 4, 3);
+    }
+  }
+  pop();
+}

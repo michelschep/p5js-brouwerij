@@ -37,6 +37,7 @@ function setup() {
     bs.speed = parseFloat(select('#speed').value());
     select('#playPause').html('&#9208; Pauze');
     select('#speedVal').html(nf(bs.speed, 1, 1) + '\u00d7');
+    resetEndScreen();
   });
 
   select('#speed').input(() => {
@@ -79,6 +80,9 @@ function draw() {
   drawParticles();
   dash.draw(bs);
   uiMgr.draw(bs);
+
+  // End screen overlay (drawn last, on top of everything)
+  if (bs.done) drawEndScreen(bs);
 
   // Step-progress dots strip above tanks
   _drawStepDots();
