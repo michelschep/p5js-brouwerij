@@ -90,8 +90,8 @@ function drawEndScreen(bs) {
 function _drawBottle(cx, cy) {
   const BW  = 90;   // body width
   const BH  = 128;  // body height
-  const SH  = 55;   // shoulder height
-  const NH  = 96;   // neck height
+  const SH  = 50;   // shoulder height
+  const NH  = 95;   // neck height
   const NW  = 20;   // neck width
   const CW  = 26;   // cap width
   const CH  = 20;   // cap height
@@ -99,90 +99,58 @@ function _drawBottle(cx, cy) {
 
   const capY  = cy - totH / 2;
   const neckY = capY + CH;
-  const shlY  = neckY + NH;   // top of shoulder = bottom of neck
-  const bodY  = shlY + SH;    // top of body
-  const botY  = bodY + BH;    // bottom of bottle
+  const shlY  = neckY + NH;   // shoulder top = neck bottom
+  const bodY  = shlY + SH;    // body top
+  const botY  = bodY + BH;    // body bottom
 
   push();
   const GR = 126, GG = 68, GB = 3;
 
-  // ── Single-pass bottle silhouette ────────────────────────────
-  fill(GR, GG, GB, 215); stroke(55, 28, 2); strokeWeight(2);
-  beginShape();
-    vertex(cx - BW/2 + 8, botY);          // bottom-left corner
-    vertex(cx + BW/2 - 8, botY);          // bottom-right corner
-    vertex(cx + BW/2,     botY - 10);     // right body side start
-    vertex(cx + BW/2,     bodY);          // top-right of body
+  // Draw shapes back-to-front, slightly overlapping so no seams
 
-    // Right shoulder: smoothly inward from body width to neck width
-    bezierVertex(
-      cx + BW/2,     bodY - SH * 0.45,   // stay at body width briefly
-      cx + NW/2 + 2, shlY + SH * 0.30,   // then pull in toward neck
-      cx + NW/2,     shlY                 // arrive at neck width
-    );
+  // ── 1. Body ──────────────────────────────────────────────────
+  fill(GR, GG, GB, 218); stroke(55, 28, 2); strokeWeight(2);
+  rect(cx - BW/2, bodY, BW, BH, 0, 0, 10, 10);
 
-    vertex(cx + NW/2,  neckY);            // right neck going up
-    vertex(cx + CW/2,  neckY);            // cap flare right
-    vertex(cx + CW/2,  capY + 3);         // cap top-right
-    vertex(cx,         capY);             // cap centre top (slight dome)
-    vertex(cx - CW/2,  capY + 3);         // cap top-left
-    vertex(cx - CW/2,  neckY);            // cap flare left
-    vertex(cx - NW/2,  neckY);            // left neck start
-
-    // Left shoulder: mirror of right
-    bezierVertex(
-      cx - NW/2 - 2, shlY + SH * 0.30,
-      cx - BW/2,     bodY - SH * 0.45,
-      cx - BW/2,     bodY
-    );
-
-    vertex(cx - BW/2,     botY - 10);
-    vertex(cx - BW/2 + 8, botY);
-  endShape(CLOSE);
-
-  // ── Beer fill (clipped to body) ───────────────────────────────
+  // Beer fill inside body
   let bc = color(COL.liquid[9]);
-  fill(red(bc), green(bc), blue(bc), 210); noStroke();
-  drawingContext.save();
-  drawingContext.beginPath();
-  drawingContext.rect(cx - BW/2 + 3, bodY + 3, BW - 6, BH - 6);
-  drawingContext.clip();
+  fill(red(bc), green(bc), blue(bc), 212); noStroke();
   rect(cx - BW/2 + 3, bodY + 3, BW - 6, BH - 6, 0, 0, 8, 8);
-  drawingContext.restore();
 
-  // ── Neck ring ────────────────────────────────────────────────
-  fill(GR - 10, GG - 5, GB); stroke(55, 28, 2); strokeWeight(1);
-  rect(cx - NW/2 - 1, shlY - 5, NW + 2, 6);
+  // ── 2. Shoulder (trapezoid) ───────────────────────────────────
+  // Covers the join line between body and neck
+  fill(GR, GG, GB, 218); stroke(55, 28, 2); strokeWeight(2);
+  quad(cx - BW/2, bodY + 2,   // bottom-left  (slightly into body)
+       cx + BW/2, bodY + 2,   // bottom-right
+       cx + NW/2, shlY - 2,   // top-right    (slightly into neck)
+       cx - NW/2, shlY - 2);  // top-left
 
-  // ── Crown cap (white/ivory like Weihenstephaner) ──────────────
-  fill(240, 238, 228); stroke(170, 165, 150); strokeWeight(1.5);
-  beginShape();
-    vertex(cx - CW/2,  neckY);
-    vertex(cx + CW/2,  neckY);
-    vertex(cx + CW/2,  capY + 3);
-    vertex(cx,         capY);
-    vertex(cx - CW/2,  capY + 3);
-  endShape(CLOSE);
-  // Cap ridges
-  stroke(200, 195, 182); strokeWeight(0.7);
+  // ── 3. Neck ───────────────────────────────────────────────────
+  fill(GR, GG, GB, 222); stroke(55, 28, 2); strokeWeight(2);
+  rect(cx - NW/2, neckY, NW, NH + 4, 0, 0, 0, 0);
+
+  // ── 4. Crown cap ─────────────────────────────────────────────
+  fill(242, 238, 226); stroke(165, 158, 142); strokeWeight(1.5);
+  rect(cx - CW/2, capY, CW, CH + 2, 3, 3, 4, 4);
+  stroke(205, 200, 185); strokeWeight(0.7);
   for (let i = 1; i < 9; i++) {
-    let rx = cx - CW/2 + i * CW / 9;
-    line(rx, neckY - 2, rx, capY + 5);
+    let rx = cx - CW/2 + i * CW/9;
+    line(rx, capY + 4, rx, capY + CH - 1);
   }
-  fill(255, 255, 255, 80); noStroke();
-  triangle(cx - CW/2 + 4, capY + 8, cx, capY + 1, cx, capY + 8);
+  fill(255, 255, 255, 85); noStroke();
+  rect(cx - CW/2 + 3, capY + 3, CW - 6, 5, 2);
 
-  // ── Glass highlights ─────────────────────────────────────────
+  // ── 5. Glass highlights ───────────────────────────────────────
   noStroke();
-  fill(255, 255, 255, 42);
+  fill(255, 255, 255, 40);
   rect(cx - BW/2 + 8, bodY + 16, BW/6, BH - 32, 3);
-  fill(255, 255, 255, 28);
-  rect(cx - NW/2 + 3, neckY + 10, NW/3, NH - 20, 2);
+  fill(255, 255, 255, 26);
+  rect(cx - NW/2 + 3, neckY + 10, NW/3 - 1, NH - 20, 2);
 
-  // ── Label ────────────────────────────────────────────────────
+  // ── 6. Label ─────────────────────────────────────────────────
   _drawBeerLabel(cx, bodY + BH * 0.44, BW - 8, BH * 0.86);
 
-  // ── Drop shadow ───────────────────────────────────────────────
+  // ── 7. Drop shadow ────────────────────────────────────────────
   fill(0, 0, 0, 60); noStroke();
   ellipse(cx, botY + 7, BW * 1.1, 14);
 
