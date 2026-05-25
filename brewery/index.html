@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍺 Deutsches Brauerei — p5.js Visualisatie</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #050D1A;
+      color: #D0D8E0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Controls bar ───────────────────────────────────────── */
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: #0D1B2A;
+      border-bottom: 1px solid #2A3540;
+      width: 100%;
+      max-width: 1460px;
+      flex-wrap: wrap;
+    }
+
+    #controls button {
+      background: #1E3A5F;
+      color: #D0D8E0;
+      border: 1px solid #7A8B9A;
+      padding: 5px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: monospace;
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    #controls button:hover {
+      background: #2A4A7F;
+      border-color: #FFD700;
+    }
+
+    #controls label {
+      font-size: 12px;
+      color: #A0B8D0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      accent-color: #FFD700;
+      width: 120px;
+      cursor: pointer;
+    }
+
+    #speedVal {
+      font-family: monospace;
+      font-size: 12px;
+      color: #FFD700;
+      min-width: 32px;
+    }
+
+    /* ── Canvas container ───────────────────────────────────── */
+    #canvasContainer {
+      width: 1460px;
+      max-width: 100vw;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto !important;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #4A6080;
+      font-family: monospace;
+      padding-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="controls">
+    <button id="playPause">&#9208; Pauze</button>
+    <button id="nextStep">&#9193; Volgende stap</button>
+    <button id="reset">&#128260; Reset</button>
+    <label>
+      Snelheid:
+      <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1">
+      <span id="speedVal">1.0&times;</span>
+    </label>
+  </div>
+
+  <div id="canvasContainer"></div>
+
+  <footer>Reinheitsgebot 1516 &middot; Wasser &middot; Malz &middot; Hopfen &middot; Hefe &mdash; p5.js brewery visualisatie</footer>
+
+  <!-- p5.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <!-- App modules (load order matters) -->
+  <script src="constants.js"></script>
+  <script src="particles.js"></script>
+  <script src="tanks.js"></script>
+  <script src="pipes.js"></script>
+  <script src="brewery.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="ui.js"></script>
+  <script src="sketch.js"></script>
+
+</body>
+</html>
