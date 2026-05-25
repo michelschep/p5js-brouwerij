@@ -88,13 +88,14 @@ function drawEndScreen(bs) {
 
 // ─── Beer bottle ─────────────────────────────────────────────────────────────
 function _drawBottle(cx, cy) {
-  const BW   = 72;    // body width  ← slimmer
-  const BH   = 250;   // body height ← taller
-  const NW   = 26;    // neck width
-  const NH   = 115;   // neck height ← longer neck
-  const SH   = 48;    // shoulder height
-  const CW   = 32;    // cap width
-  const CH   = 18;    // cap height
+  // Proportions of a real 0.5 L German Longneck
+  const BW  = 100;  // body width
+  const BH  = 165;  // body height
+  const NW  = 26;   // neck width
+  const NH  = 72;   // neck height
+  const SH  = 52;   // shoulder height (curved)
+  const CW  = 32;   // cap width
+  const CH  = 17;   // cap height
   const totH = CH + NH + SH + BH;
 
   const capY  = cy - totH / 2;
@@ -103,62 +104,71 @@ function _drawBottle(cx, cy) {
   const bodY  = shlY + SH;
 
   push();
+  const GR = 130, GG = 72, GB = 6; // amber glass
 
-  // ── Amber glass colour ───────────────────────────────────────
-  const GR = 132, GG = 74, GB = 8;
+  // ── Outline pass (drawn first, slightly larger, for border) ──
+  fill(70, 38, 4); noStroke();
+  // Body outline
+  rect(cx - BW / 2 - 1, bodY - 1, BW + 2, BH + 2, 0, 0, 11, 11);
 
-  // Body
-  fill(GR, GG, GB, 195); stroke(70, 38, 4); strokeWeight(2);
+  // ── Body ─────────────────────────────────────────────────────
+  fill(GR, GG, GB, 210); noStroke();
   rect(cx - BW / 2, bodY, BW, BH, 0, 0, 10, 10);
 
   // Beer fill inside body
   let beerCol = color(COL.liquid[9]);
-  fill(red(beerCol), green(beerCol), blue(beerCol), 200); noStroke();
+  fill(red(beerCol), green(beerCol), blue(beerCol), 210); noStroke();
   rect(cx - BW / 2 + 3, bodY + 3, BW - 6, BH - 6, 0, 0, 8, 8);
 
-  // Shoulder
-  fill(GR, GG, GB, 195); stroke(70, 38, 4); strokeWeight(2);
+  // ── Shoulder (curved bezier) ──────────────────────────────────
+  stroke(70, 38, 4); strokeWeight(2); fill(GR, GG, GB, 210);
   beginShape();
-  vertex(cx - BW / 2, shlY + SH);
-  vertex(cx + BW / 2, shlY + SH);
-  vertex(cx + NW / 2, shlY);
-  vertex(cx - NW / 2, shlY);
+  vertex(cx - BW / 2, bodY);          // bottom-left of shoulder
+  vertex(cx + BW / 2, bodY);          // bottom-right of shoulder
+  bezierVertex(                        // right curve up to neck
+    cx + BW / 2,   bodY - SH * 0.3,
+    cx + NW / 2 + 10, shlY + SH * 0.2,
+    cx + NW / 2,   shlY
+  );
+  vertex(cx - NW / 2, shlY);          // top of neck left
+  bezierVertex(                        // left curve down to body
+    cx - NW / 2 - 10, shlY + SH * 0.2,
+    cx - BW / 2,   bodY - SH * 0.3,
+    cx - BW / 2,   bodY
+  );
   endShape(CLOSE);
 
-  // Neck
-  fill(GR, GG, GB, 220); stroke(70, 38, 4); strokeWeight(2);
-  rect(cx - NW / 2, neckY, NW, NH, 3, 3, 0, 0);
+  // ── Neck ─────────────────────────────────────────────────────
+  fill(GR, GG, GB, 225); stroke(70, 38, 4); strokeWeight(2);
+  rect(cx - NW / 2, neckY, NW, NH + 2, 2, 2, 0, 0);
 
   // ── Crown cap ────────────────────────────────────────────────
-  fill(160, 25, 25); stroke(100, 16, 16); strokeWeight(1.5);
-  rect(cx - CW / 2, capY, CW, CH, 3, 3, 5, 5);
-  // Ridges
-  stroke(200, 45, 45); strokeWeight(0.8);
+  fill(155, 20, 20); stroke(95, 12, 12); strokeWeight(1.5);
+  rect(cx - CW / 2, capY, CW, CH, 3, 3, 4, 4);
+  stroke(200, 42, 42); strokeWeight(0.8);
   for (let i = 1; i < 9; i++) {
     let rx = cx - CW / 2 + i * CW / 9;
-    line(rx, capY + 5, rx, capY + CH - 3);
+    line(rx, capY + 4, rx, capY + CH - 2);
   }
-  // Top shine
-  fill(220, 60, 60, 120); noStroke();
+  fill(220, 58, 58, 110); noStroke();
   rect(cx - CW / 2 + 3, capY + 3, CW - 6, 4, 2);
 
   // ── Glass highlights ─────────────────────────────────────────
   noStroke();
-  fill(255, 255, 255, 35);
-  rect(cx - BW / 2 + 7, bodY + 12, BW / 4, BH - 24, 3);
-  fill(255, 255, 255, 20);
-  rect(cx - NW / 2 + 4, neckY + 6, NW / 3 + 1, NH - 12, 2);
+  fill(255, 255, 255, 38);
+  rect(cx - BW / 2 + 7, bodY + 14, BW / 5, BH - 28, 3);
+  fill(255, 255, 255, 22);
+  rect(cx - NW / 2 + 3, neckY + 8, NW / 3, NH - 16, 2);
 
   // ── Label ────────────────────────────────────────────────────
-  _drawBeerLabel(cx, bodY + BH * 0.44, BW - 4, BH * 0.80);
+  _drawBeerLabel(cx, bodY + BH * 0.44, BW - 6, BH * 0.84);
 
-  // ── Table surface ────────────────────────────────────────────
-  let tableY = bodY + BH + 10;
-  stroke(50, 68, 85, 130); strokeWeight(1.5); noFill();
-  line(cx - BW * 0.65, tableY, cx + BW * 0.65, tableY);
-  // Simple drop-shadow / reflection ellipse
-  fill(0, 0, 0, 45); noStroke();
-  ellipse(cx, tableY + 5, BW * 0.9, 12);
+  // ── Table shadow ─────────────────────────────────────────────
+  let tableY = bodY + BH + 8;
+  stroke(50, 68, 85, 120); strokeWeight(1.5); noFill();
+  line(cx - BW * 0.7, tableY, cx + BW * 0.7, tableY);
+  fill(0, 0, 0, 50); noStroke();
+  ellipse(cx, tableY + 6, BW * 1.1, 14);
 
   pop();
 }
@@ -184,53 +194,53 @@ function _drawBeerLabel(cx, cy, lw, lh) {
 
   // ── "KLOSTER" ────────────────────────────────────────────────
   fill('#8B1A1A');
-  textFont('monospace'); textSize(6);
+  textFont('monospace'); textSize(7);
   text('\u2015\u2015 KLOSTER \u2015\u2015', cx, yy);
-  yy += 9;
+  yy += 10;
 
   // ── Monastery illustration ───────────────────────────────────
-  _monasteryIcon(cx, yy, lw * 0.82, 40);
-  yy += 44;
+  _monasteryIcon(cx, yy, lw * 0.82, 44);
+  yy += 48;
 
   // ── Main name ────────────────────────────────────────────────
   fill('#160800');
-  textFont('monospace'); textSize(8);
+  textFont('monospace'); textSize(9);
   drawingContext.shadowBlur  = 3;
   drawingContext.shadowColor = 'rgba(120,80,10,0.5)';
   text('RIDDAGSHAUSEN', cx, yy);
   drawingContext.shadowBlur = 0;
-  yy += 11;
+  yy += 12;
 
   // ── Divider with hop motif ───────────────────────────────────
   stroke('#9B6E14'); strokeWeight(0.8);
   line(lx + 6, yy + 3, lx + lw - 6, yy + 3);
   fill('#5A7A2A'); noStroke();
   ellipse(cx - 3, yy + 3, 3, 5); ellipse(cx + 3, yy + 3, 3, 5);
-  yy += 7;
+  yy += 8;
 
   // ── Beer style ───────────────────────────────────────────────
   fill('#4A2A08'); noStroke();
-  textFont('Arial'); textSize(5.5);
+  textFont('Arial'); textSize(6.5);
   text('BAYERISCHES HELLES LAGER', cx, yy);
-  yy += 9;
+  yy += 10;
 
   // ── Location ─────────────────────────────────────────────────
-  fill('#6B4414'); textSize(5.5);
+  fill('#6B4414'); textSize(6.5);
   text('Braunschweig \u00b7 seit 1145', cx, yy);
-  yy += 9;
+  yy += 10;
 
   // ── Hop & grain row ──────────────────────────────────────────
   _hopRow(cx, yy, lw * 0.55);
-  yy += 13;
+  yy += 14;
 
   // ── ABV + Volume ─────────────────────────────────────────────
   fill('#1E0E00');
-  textFont('monospace'); textSize(6.5);
+  textFont('monospace'); textSize(7);
   text('5,2% vol  \u00b7  0,5 L', cx, yy);
-  yy += 10;
+  yy += 11;
 
   // ── Reinheitsgebot ───────────────────────────────────────────
-  fill('#7A5820'); textFont('Arial'); textSize(5);
+  fill('#7A5820'); textFont('Arial'); textSize(5.5);
   text('Reinheitsgebot 1516', cx, yy);
 
   pop();
